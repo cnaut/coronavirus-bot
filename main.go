@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"strconv"
 	"time"
+
+	"github.com/go-redis/redis"
 )
 
 type CountryData struct {
@@ -35,5 +37,29 @@ func main() {
 
 	json.Unmarshal(body, &result)
 
-	fmt.Println(strconv.Itoa(result[0].Deaths) + " deaths in the United States as of " + time.Now().String())
+	timeNow := time.Now().String()
+	deaths := strconv.Itoa(result[0].Deaths)
+	fmt.Println(deaths + " deaths in the United States as of " + timeNow)
+
+	// Save result to redis
+	client := redis.NewClient(&redis.Options{
+		Addr:     "localhost:6379",
+		Password: "",
+		DB:       0,
+	})
+
+	err = client.Set(timeNow, deaths, 0).Err()
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	keys, err := client.Keys("2020*").Result()
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	for _, key := range keys {
+		deaths, _ := client.Get(key).Result()
+		fmt.Println(deaths + " - " + key)
+	}
 }
