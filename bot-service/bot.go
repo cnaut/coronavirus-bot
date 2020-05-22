@@ -1,4 +1,4 @@
-package main
+package bot
 
 import (
 	"encoding/json"
@@ -41,10 +41,6 @@ type webhookRequest struct {
 // https://godoc.org/google.golang.org/genproto/googleapis/cloud/dialogflow/v2#WebhookResponse
 type webhookResponse struct {
 	FulfillmentMessages []message `json:"fulfillmentMessages"`
-}
-
-func main() {
-
 }
 
 // welcome creates a response for the welcome intent.
