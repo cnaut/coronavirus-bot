@@ -9,12 +9,22 @@ import (
 	"strconv"
 )
 
+type geoCountrCode struct {
+	Alpha2 string `json:"alpha-2"`
+	Name   string `json:"name"`
+}
+
+type parameters struct {
+	GeoCountryCode geoCountryCode `json:"geo-country-code"`
+}
+
 type intent struct {
 	DisplayName string `json:"displayName"`
 }
 
 type queryResult struct {
-	Intent intent `json:"intent"`
+	Intent     intent      `json:"intent"`
+	Parameters paramenters `json:"parameters"`
 }
 
 type text struct {
@@ -25,7 +35,7 @@ type message struct {
 	Text text `json:"text"`
 }
 
-type CountryData struct {
+type countryData struct {
 	Active             int `json:"active"`
 	Cases              int `json:"cases"`
 	CasesPerOneMillion int `json:"casesPerOneMillion"`
@@ -81,7 +91,11 @@ func getAgentName(request webhookRequest) (webhookResponse, error) {
 }
 
 func handleCoronavirusDataRequest(request webhookRequest) (webhookResponse, error) {
-	resp, err := http.Get("https://corona.lmao.ninja/v2/countries?sort=cases")
+	countryCode := request.QueryResult.Parameters.GeoCountryCode
+	countryAlpha2 = countryCode.Alpha2
+	countryName = countryCode.name
+
+	resp, err := http.Get("https://corona.lmao.ninja/v2/countries/" + countryAlpha2)
 	if err != nil {
 		fmt.Println(err)
 		return webhookResponse{}, err
@@ -94,7 +108,7 @@ func handleCoronavirusDataRequest(request webhookRequest) (webhookResponse, erro
 		return webhookResponse{}, err
 	}
 
-	var result []CountryData
+	var result []countryData
 
 	json.Unmarshal(body, &result)
 	deaths := strconv.Itoa(result[0].Deaths)
@@ -103,39 +117,13 @@ func handleCoronavirusDataRequest(request webhookRequest) (webhookResponse, erro
 		FulfillmentMessages: []message{
 			{
 				Text: text{
-					Text: []string{deaths + " deaths in the United States"},
+					Text: []string{deaths + " deaths in " + countryName},
 				},
 			},
 		},
 	}
 
 	return response, nil
-	/**
-	    return new Promise((resolve, reject) => {
-			const countryData = request.body.queryResult.parameters["geo-country-code"];
-			const countryCode = countryData["alpha-2"];
-			const countryName = countryData.name;
-			https.get('https://corona.lmao.ninja/v2/countries/' + countryCode, (resp) => {
-			  console.log("RESPNSE");
-			  let data = '';
-
-			  // A chunk of data has been recieved.
-			  resp.on('data', (chunk) => {
-				data += chunk;
-			  });
-
-			  // The whole response has been received. Print out the result.
-			  resp.on('end', () => {
-					let parsedData = JSON.parse(data);
-					agent.add(parsedData.deaths + ` people have died in ` + countryName + ` from coronavirus.` );
-				  return resolve();
-			  });
-
-			}).on("error", (err) => {
-			  console.log("Error: " + err.message);
-			});
-		  });
-	**/
 }
 
 // handleError handles internal errors.
