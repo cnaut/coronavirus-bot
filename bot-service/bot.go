@@ -9,7 +9,7 @@ import (
 	"strconv"
 )
 
-type geoCountrCode struct {
+type geoCountryCode struct {
 	Alpha2 string `json:"alpha-2"`
 	Name   string `json:"name"`
 }
@@ -23,8 +23,8 @@ type intent struct {
 }
 
 type queryResult struct {
-	Intent     intent      `json:"intent"`
-	Parameters paramenters `json:"parameters"`
+	Intent     intent     `json:"intent"`
+	Parameters parameters `json:"parameters"`
 }
 
 type text struct {
@@ -92,8 +92,8 @@ func getAgentName(request webhookRequest) (webhookResponse, error) {
 
 func handleCoronavirusDataRequest(request webhookRequest) (webhookResponse, error) {
 	countryCode := request.QueryResult.Parameters.GeoCountryCode
-	countryAlpha2 = countryCode.Alpha2
-	countryName = countryCode.name
+	countryAlpha2 := countryCode.Alpha2
+	countryName := countryCode.Name
 
 	resp, err := http.Get("https://corona.lmao.ninja/v2/countries/" + countryAlpha2)
 	if err != nil {
