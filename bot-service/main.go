@@ -43,6 +43,10 @@ type webhookResponse struct {
 	FulfillmentMessages []message `json:"fulfillmentMessages"`
 }
 
+func main() {
+
+}
+
 // welcome creates a response for the welcome intent.
 func welcome(request webhookRequest) (webhookResponse, error) {
 	response := webhookResponse{
