@@ -3,8 +3,10 @@ package bot
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
+	"strconv"
 )
 
 type intent struct {
@@ -21,6 +23,13 @@ type text struct {
 
 type message struct {
 	Text text `json:"text"`
+}
+
+type CountryData struct {
+	Active             int `json:"active"`
+	Cases              int `json:"cases"`
+	CasesPerOneMillion int `json:"casesPerOneMillion"`
+	Deaths             int `json:"deaths"`
 }
 
 // webhookRequest is used to unmarshal a WebhookRequest JSON object. Note that
@@ -72,40 +81,36 @@ func getAgentName(request webhookRequest) (webhookResponse, error) {
 }
 
 func handleCoronavirusDataRequest(request webhookRequest) (webhookResponse, error) {
+	resp, err := http.Get("https://corona.lmao.ninja/v2/countries?sort=cases")
+	if err != nil {
+		fmt.Println(err)
+		return webhookResponse{}, err
+	}
+
+	body, err := ioutil.ReadAll(resp.Body)
+
+	if err != nil {
+		fmt.Println(err)
+		return webhookResponse{}, err
+	}
+
+	var result []CountryData
+
+	json.Unmarshal(body, &result)
+	deaths := strconv.Itoa(result[0].Deaths)
+
 	response := webhookResponse{
 		FulfillmentMessages: []message{
 			{
 				Text: text{
-					Text: []string{"This was a coronavirus data request"},
+					Text: []string{deaths + " deaths in the United States"},
 				},
 			},
 		},
 	}
+
 	return response, nil
 	/**
-		resp, err := http.Get("https://corona.lmao.ninja/v2/countries?sort=cases")
-		if err != nil {
-			fmt.Println(err)
-			return
-		}
-
-		body, err := ioutil.ReadAll(resp.Body)
-
-		if err != nil {
-			fmt.Println(err)
-			return _, err
-		}
-
-		var result []CountryData
-
-		json.Unmarshal(body, &result)
-
-		timeNow := time.Now().String()
-		deaths := strconv.Itoa(result[0].Deaths)
-		fmt.Println(deaths + " deaths in the United States as of " + timeNow)
-
-
-
 	    return new Promise((resolve, reject) => {
 			const countryData = request.body.queryResult.parameters["geo-country-code"];
 			const countryCode = countryData["alpha-2"];
@@ -130,7 +135,7 @@ func handleCoronavirusDataRequest(request webhookRequest) (webhookResponse, erro
 			  console.log("Error: " + err.message);
 			});
 		  });
-		  **/
+	**/
 }
 
 // handleError handles internal errors.
