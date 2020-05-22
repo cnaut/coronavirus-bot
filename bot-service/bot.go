@@ -108,10 +108,10 @@ func handleCoronavirusDataRequest(request webhookRequest) (webhookResponse, erro
 		return webhookResponse{}, err
 	}
 
-	var result []countryData
+	var result countryData
 
 	json.Unmarshal(body, &result)
-	deaths := strconv.Itoa(result[0].Deaths)
+	deaths := strconv.Itoa(result.Deaths)
 
 	response := webhookResponse{
 		FulfillmentMessages: []message{
