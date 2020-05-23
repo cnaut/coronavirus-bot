@@ -7,6 +7,8 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+
+	"github.com/cnaut/cuomo-briefing-tracker/twitter"
 )
 
 type geoCountryCode struct {
@@ -126,6 +128,22 @@ func handleCoronavirusDataRequest(request webhookRequest) (webhookResponse, erro
 	return response, nil
 }
 
+func handleCuomoBriefingTimeRequest(request webhookRequest) (webhookResponse, error) {
+	briefingTime := twitter.FindCuomoBriefingTime()
+
+	response := webhookResponse{
+		FulfillmentMessages: []message{
+			{
+				Text: text{
+					Text: []string{" Next Cuomo daily briefing is at " + briefingTime},
+				},
+			},
+		},
+	}
+
+	return response, nil
+}
+
 // handleError handles internal errors.
 func handleError(w http.ResponseWriter, err error) {
 	w.WriteHeader(http.StatusInternalServerError)
@@ -153,6 +171,8 @@ func HandleWebhookRequest(w http.ResponseWriter, r *http.Request) {
 		response, err = getAgentName(request)
 	case "Coronavirus Data":
 		response, err = handleCoronavirusDataRequest(request)
+	case "Cuomo Briefing Time":
+		response, err = handleCuomoBriefingTimeRequest(request)
 	default:
 		err = fmt.Errorf("Unknown intent: %s", intent)
 	}
