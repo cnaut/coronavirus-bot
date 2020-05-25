@@ -1,4 +1,4 @@
-module bot
+module github.com/cnaut/coronavirus-bot/bot
 
 go 1.12
 
