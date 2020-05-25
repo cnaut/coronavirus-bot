@@ -15,7 +15,7 @@ type geoCountryCode struct {
 	Alpha2 string `json:"alpha-2"`
 	Name   string `json:"name"`
 }
-1
+
 type parameters struct {
 	GeoCountryCode geoCountryCode `json:"geo-country-code"`
 }
